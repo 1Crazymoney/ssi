@@ -1,0 +1,2 @@
+# ssi
+Digital Identity Core
