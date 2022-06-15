@@ -36,8 +36,9 @@ pub fn create_identity(
 
 /// Given a JSON-LD document, create a data integrity proof for the document.
 /// Currently, only `Ed25519Signature2018` data integrity proofs in the JSON-LD format can be created.
-pub fn create_data_integrity_proof(
+pub fn create_data_integrity_proof<S: signature::Signature>(
     _doc: serde_json::Value,
+    _signer: &impl signature::Signer<S>,
 ) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
     unimplemented!();
 }
@@ -45,18 +46,20 @@ pub fn create_data_integrity_proof(
 /// Given a JSON-LD document and a DIDResolver, verify the data integrity proof for the document.
 /// This will by parsing the `verificationMethod` property of the data integrity proof and resolving it to a key that can be used to verify the proof.
 /// Currently only `Ed25519Signature2018` is supported for data integrity proof verification.
-pub fn verify_data_integrity_proof(
+pub fn verify_data_integrity_proof<S: signature::Signature>(
     _doc: serde_json::Value,
     _resolver: &impl DIDResolver,
+    _verifier: &impl signature::Verifier<S>,
 ) -> Result<bool, Box<dyn std::error::Error>> {
     unimplemented!();
 }
 
 /// Given a JSON-LD document and a DIDResolver, verify the data integrity proof for the Verifiable Presentation.
 /// Then each claimed Verifiable Credential must be verified for validity and ownership of the credential by the subject.
-pub fn verify_presentation(
+pub fn verify_presentation<S: signature::Signature>(
     _doc: serde_json::Value,
     _resolver: &impl DIDResolver,
+    _verifier: &impl signature::Verifier<S>,
 ) -> Result<bool, Box<dyn std::error::Error>> {
     unimplemented!();
 }
