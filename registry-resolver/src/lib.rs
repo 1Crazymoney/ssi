@@ -1,5 +1,5 @@
 #[path = "gen/registry_api.v1.rs"]
-pub mod registry {}
+pub mod registry;
 
 pub struct RegistryResolver {}
 
