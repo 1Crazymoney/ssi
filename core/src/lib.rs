@@ -1,12 +1,17 @@
 /// Verification of Data Integrity Proofs requires the resolution of the `verificationMethod` specified in the proof.
 /// The `verificationMethod` refers to a cryptographic key stored in some external source.
 /// The DIDResolver is responsible for resolving the `verificationMethod` to a key that can be used to verify the proof.
+#[async_trait::async_trait]
 pub trait DIDResolver {
     /// Given a `did`, resolve the full DID document associated with that matching `did`.
     /// Return the JSON-LD document representing the DID.
-    fn read(&self, did: &str) -> serde_json::Value;
+    async fn read(&self, did: String) -> serde_json::Value;
     /// Given a `did` and the associated DID Document, register the DID Document with the external source used by the DIDResolver.
-    fn create(&self, did: &str, doc: serde_json::Value) -> String;
+    async fn create(
+        &self,
+        did: String,
+        doc: serde_json::Value,
+    ) -> Result<(), Box<dyn std::error::Error>>;
 }
 
 /// Given the credential type and the credential subject information, create a unissued JSON-LD credential.
