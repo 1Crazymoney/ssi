@@ -5,6 +5,7 @@ plugins:
     opt:
       - compile_well_known_types
       - extern_path=.google.protobuf=::pbjson_types
-      - file_descriptor_set
   - remote: buf.build/prost/plugins/tonic:v0.1.1-1
     out: src/gen
+    opt:
+      - no_server

@@ -5,18 +5,23 @@
 pub trait DIDResolver {
     /// Given a `did`, resolve the full DID document associated with that matching `did`.
     /// Return the JSON-LD document representing the DID.
-    async fn read(&self, did: String) -> serde_json::Value;
+    async fn read(self, did: String) -> serde_json::Value;
     /// Given a `did` and the associated DID Document, register the DID Document with the external source used by the DIDResolver.
     async fn create(
-        &self,
+        self,
         did: String,
         doc: serde_json::Value,
     ) -> Result<(), Box<dyn std::error::Error>>;
     // Returns the DID Method that the DID Resolver is compatible with. Each resolver can only be compatible with one.
-    fn get_method() -> String;
+    fn get_method() -> &'static str;
     // Given a `did` and `key` it will construct the proper `verificationMethod` to use as part of the data integrity proof creation process.
     fn create_verification_method(did: String, key_id: String) -> String {
-        return format!("{}:{}#{}", did, Self::get_method(), key_id);
+        return format!(
+            "did:{}:{}#{}",
+            String::from(Self::get_method()),
+            did,
+            key_id
+        );
     }
 }
 
