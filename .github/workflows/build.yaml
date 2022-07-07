@@ -1,0 +1,26 @@
+name: SSI Build
+
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup | Rust
+        uses: ATiltedTree/setup-rust@v1
+        with:
+          rust-version: 1.62
+
+      - uses: bufbuild/buf-setup-action@v1
+
+      - name: Build
+        run: |-
+          cargo build
+
+      - name: Test
+        run: |-
+          cargo test

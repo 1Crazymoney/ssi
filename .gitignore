@@ -10,3 +10,4 @@
 **/*.rs.bk
 
 gen
+.vscode
