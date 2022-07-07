@@ -1,7 +1,7 @@
 use mockall::*;
 use registry::registry_service_client::RegistryServiceClient;
 
-#[path = "../gen/registry_api.v1.rs"]
+#[path = "gen/registry_api.v1.rs"]
 pub mod registry;
 
 pub struct GrpcClient {
