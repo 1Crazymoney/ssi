@@ -68,6 +68,12 @@ mod tests {
         RegistryResolver,
     };
 
+    macro_rules! aw {
+        ($e:expr) => {
+            tokio_test::block_on($e)
+        };
+    }
+
     fn create_did_doc(did: String) -> serde_json::Value {
         return serde_json::json!({
                 "@context":["https://www.w3.org/ns/did/v1","https://w3id.org/security/suites/ed25519-2020/v1"],
@@ -118,7 +124,7 @@ mod tests {
         Some(ssi::error::ErrorKind::InvalidData),
         false
     )]
-    async fn test_create(
+    fn test_create(
         #[case] did: String,
         #[case] doc: serde_json::Value,
         #[case] mock_create_response: Option<
@@ -142,7 +148,7 @@ mod tests {
             client: Box::new(mock_client),
         };
 
-        let res = resolver.create(did, doc).await;
+        let res = aw!(resolver.create(did, doc));
         assert_eq!(res.is_ok(), expect_ok);
         match res.err() {
             Some(e) => assert_eq!(e.kind, expect_error_kind.unwrap()),
@@ -177,7 +183,7 @@ mod tests {
         Some(ssi::error::ErrorKind::DocumentNotFound),
         false
     )]
-    async fn test_read(
+    fn test_read(
         #[case] did: String,
         #[case] mock_read_response: Option<Result<tonic::Response<ReadResponse>, tonic::Status>>,
         #[case] expect_error_kind: Option<ssi::error::ErrorKind>,
@@ -195,7 +201,7 @@ mod tests {
             client: Box::new(mock_client),
         };
 
-        let res = resolver.read(did).await;
+        let res = aw!(resolver.read(did));
         assert_eq!(res.is_ok(), expect_ok);
         match res.err() {
             Some(e) => assert_eq!(e.kind, expect_error_kind.unwrap()),

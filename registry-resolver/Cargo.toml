@@ -18,5 +18,4 @@ mockall = "0.11.1"
 
 [dev-dependencies]
 rstest = "0.15.0"
-# https://docs.rs/rstest/latest/rstest/attr.rstest.html#async. rstest works with default with async-std as long as it has the `attributes` feature enabled.
-async-std = { version = "1.5", features = ["attributes"] }
+tokio-test = "0.4.2"
