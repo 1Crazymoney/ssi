@@ -8,7 +8,6 @@ pub struct GrpcClient {
     inner: RegistryServiceClient<tonic::transport::Channel>,
 }
 
-#[automock]
 impl GrpcClient {
     pub async fn new(url: String) -> impl RegistryClient + Send + Sync {
         let inner = RegistryServiceClient::connect(url.clone()).await.unwrap();

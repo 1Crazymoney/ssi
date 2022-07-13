@@ -1,18 +1,17 @@
-
 #![allow(unused_variables)]
 #![allow(dead_code)]
-use std::{time::{SystemTime}};
+use std::time::SystemTime;
 
+use crate::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use crate::HashMap;
 
 // cred_subject is a generic that implements trait X
 // trait X allows us to encode that object into JSON-LD
 // We provide types that implement trait X for the cred types that we support
 // Users can also user their own types that implement trait X if they need a different structure
-// --- 
-// Default context and Cred types are defaulted but can be redefined 
+// ---
+// Default context and Cred types are defaulted but can be redefined
 
 type VerificationContext = [&'static str; 2];
 
@@ -26,7 +25,7 @@ pub const CRED_TYPE_BANK_CARD: &'static str = "BankCard";
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 struct CredentialSubject {
-    id : String,
+    id: String,
     #[serde(flatten)]
     pub property_set: HashMap<String, Value>,
 }
@@ -36,14 +35,14 @@ struct CredentialSubject {
 pub struct VerifiableCredential {
     #[serde(flatten)]
     credential: Credential,
-    proof: IntegrityProof,
+    proof: crate::proof::DataIntegrityProof,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(bound(deserialize = "'de: 'static"))]
 pub struct Credential {
     #[serde(rename = "@context")]
-    context:  VerificationContext,
+    context: VerificationContext,
     #[serde(rename = "@id")]
     id: String,
     #[serde(rename = "type")]
@@ -56,29 +55,20 @@ pub struct Credential {
     pub property_set: HashMap<String, Value>,
 }
 
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct IntegrityProof {
-    proof_type: String,
-    created: String,
-    verification_method: String,
-    proof_purpose: String,
-    proof_value: String,
-}
-
 impl Credential {
-    pub fn new (
+    pub fn new(
         context: VerificationContext,
-        cred_type: String, 
-        cred_subject: HashMap<String, Value>, 
-        property_set: HashMap<String, Value>, id: &str) 
-    -> Credential {    
+        cred_type: String,
+        cred_subject: HashMap<String, Value>,
+        property_set: HashMap<String, Value>,
+        id: &str,
+    ) -> Credential {
         let vc = Credential {
             context: context,
             id: id.to_string(),
             cred_type: cred_type.to_string(),
             issuance_date: SystemTime::now(),
-            subject: CredentialSubject{
+            subject: CredentialSubject {
                 id: id.to_string(),
                 property_set: cred_subject,
             },
