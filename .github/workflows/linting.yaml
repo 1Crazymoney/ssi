@@ -1,0 +1,23 @@
+name: SSI Linting
+
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup | Rust
+        uses: ATiltedTree/setup-rust@v1
+        with:
+          rust-version: 1.62
+
+      - name: Installing
+        run: rustup component add rustfmt
+
+      - name: Linting
+        run: |-
+          cargo fmt --check --all
