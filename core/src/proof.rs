@@ -4,11 +4,16 @@ mod normalization;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct DataIntegrityProof {
-    proof_type: String,
-    created: String,
-    verification_method: String,
-    proof_purpose: String,
-    proof_value: String,
+    #[serde(rename = "type")]
+    pub proof_type: String,
+    #[serde(rename = "issuanceDate")]
+    pub created: String,
+    #[serde(rename = "verificationMethod")]
+    pub verification_method: String,
+    #[serde(rename = "verificationPurpose")]
+    pub proof_purpose: String,
+    #[serde(rename = "verificationValue")]
+    pub proof_value: String,
 }
 
 /// Given a JSON-LD document, create a data integrity proof for the document.
