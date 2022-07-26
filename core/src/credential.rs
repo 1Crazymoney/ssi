@@ -6,6 +6,10 @@ use crate::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+mod formatter_context;
+mod formatter_credential_date;
+mod formatter_credential_type;
+
 // cred_subject is a generic that implements trait X
 // trait X allows us to encode that object into JSON-LD
 // We provide types that implement trait X for the cred types that we support
@@ -31,7 +35,6 @@ pub struct CredentialSubject {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(bound(deserialize = "'de: 'static"))]
 pub struct VerifiableCredential {
     #[serde(flatten)]
     credential: Credential,
@@ -39,16 +42,21 @@ pub struct VerifiableCredential {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(bound(deserialize = "'de: 'static"))]
 pub struct Credential {
     #[serde(rename = "@context")]
-    context: VerificationContext,
+    #[serde(with = "formatter_context")]
+    context: Vec<String>,
+
     #[serde(rename = "@id")]
     id: String,
+
     #[serde(rename = "type")]
-    cred_type: String,
+    cred_type: Vec<String>,
+
     #[serde(rename = "issuanceDate")]
+    #[serde(with = "formatter_credential_date")]
     issuance_date: SystemTime,
+
     #[serde(rename = "credentialSubject")]
     subject: CredentialSubject,
     #[serde(flatten)]
@@ -58,15 +66,15 @@ pub struct Credential {
 impl Credential {
     pub fn new(
         context: VerificationContext,
-        cred_type: String,
+        cred_type: Vec<String>,
         cred_subject: HashMap<String, Value>,
         property_set: HashMap<String, Value>,
         id: &str,
     ) -> Credential {
         let vc = Credential {
-            context: context,
+            context: context.into_iter().map(|s| s.to_string()).collect(),
             id: id.to_string(),
-            cred_type: cred_type.to_string(),
+            cred_type: cred_type,
             issuance_date: SystemTime::now(),
             subject: CredentialSubject {
                 id: id.to_string(),
@@ -79,6 +87,10 @@ impl Credential {
 
     pub fn serialize(&self) -> Value {
         return serde_json::to_value(&self).unwrap();
+    }
+
+    pub fn deserialize(contents: String) -> Result<Credential, serde_json::Error> {
+        serde_json::from_str(&contents)
     }
 
     pub fn create_verifiable_credentials(
@@ -123,5 +135,47 @@ impl Presentation {
 
     pub fn serialize(&self) -> Value {
         return serde_json::to_value(&self).unwrap();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::Credential;
+    use assert_json_diff::assert_json_eq;
+    use serde_json::json;
+
+    #[test]
+    fn test_create_credential_from_string() -> Result<(), String> {
+        let expect = json!({
+            "@context":["https://www.w3.org/2018/credentials/v1","https://www.w3.org/2018/credentials/examples/v1"],"@id":"https://issuer.oidp.uscis.gov/credentials/83627465","type":["VerifiableCredential", "PermanentResidentCard"],"issuer": "did:example:28394728934792387",
+            "identifier": "83627465",
+            "name": "Permanent Resident Card",
+            "description": "Government of Example Permanent Resident Card.",
+            "issuanceDate": "2019-12-03T12:19:52Z",
+            "expirationDate": "2029-12-03T12:19:52Z",
+            "credentialSubject": {
+            "id": "did:example:b34ca6cd37bbf23",
+            "type": ["PermanentResident", "Person"],
+            "givenName": "JOHN",
+            "familyName": "SMITH",
+            "gender": "Male",
+            "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
+            "residentSince": "2015-01-01",
+            "lprCategory": "C09",
+            "lprNumber": "999-999-999",
+            "commuterClassification": "C1",
+            "birthCountry": "Bahamas",
+            "birthDate": "1958-07-17"
+            },
+        });
+
+        let ds = Credential::deserialize(expect.to_string());
+        if ds.is_ok() {
+            let vc = ds.unwrap().serialize();
+            assert_json_eq!(expect, vc);
+        } else {
+            assert!(false);
+        }
+        Ok(())
     }
 }

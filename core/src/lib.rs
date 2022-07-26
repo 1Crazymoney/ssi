@@ -34,7 +34,7 @@ pub trait DocumentBuilder {
     /// this is the default implementation of the `create` method. The `create` method can be overridden to create a custom credential.
     fn create_credential(
         &self,
-        cred_type: String,
+        cred_type: Vec<String>,
         cred_subject: HashMap<String, Value>,
         property_set: HashMap<String, Value>,
         id: &str,
@@ -111,6 +111,38 @@ mod tests {
         let mut kv_body: HashMap<String, Value> = HashMap::new();
         let mut kv_subject: HashMap<String, Value> = HashMap::new();
 
+        let type_rs = json!(["VerifiableCredential", "PermanentResidentCard"]);
+        kv_body.entry("type".to_string()).or_insert(type_rs);
+
+        let expect = json!({
+            "@context": [
+              "https://www.w3.org/2018/credentials/v1",
+              "https://www.w3.org/2018/credentials/examples/v1"
+            ],
+            "@id": "https://issuer.oidp.uscis.gov/credentials/83627465",
+            "type": ["VerifiableCredential", "PermanentResidentCard"],
+            "issuer": "did:example:28394728934792387",
+            "identifier": "83627465",
+            "name": "Permanent Resident Card",
+            "description": "Government of Example Permanent Resident Card.",
+            "issuanceDate": "2019-12-03T12:19:52Z",
+            "expirationDate": "2029-12-03T12:19:52Z",
+            "credentialSubject": {
+              "id": "did:example:b34ca6cd37bbf23",
+              "type": ["PermanentResident", "Person"],
+              "givenName": "JOHN",
+              "familyName": "SMITH",
+              "gender": "Male",
+              "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
+              "residentSince": "2015-01-01",
+              "lprCategory": "C09",
+              "lprNumber": "999-999-999",
+              "commuterClassification": "C1",
+              "birthCountry": "Bahamas",
+              "birthDate": "1958-07-17"
+            },
+        });
+
         kv_body = HashMap::from([
             ("issuer", "did:example:28394728934792387"),
             ("identifier", "83627465"),
@@ -158,37 +190,36 @@ mod tests {
         let to = TestObj::new();
         let expect_credential = json!({
             "@context": [
-              "https://www.w3.org/2018/credentials/v1",
-              "https://www.w3.org/2018/credentials/examples/v1"
-            ],
-            "@id": "https://issuer.oidp.uscis.gov/credentials/83627465",
-            "type": ["VerifiableCredential", "PermanentResidentCard"],
-            "issuer": "did:example:28394728934792387",
-            "identifier": "83627465",
-            "name": "Permanent Resident Card",
-            "description": "Government of Example Permanent Resident Card.",
-            "issuanceDate": "2019-12-03T12:19:52Z",
-            "expirationDate": "2029-12-03T12:19:52Z",
-            "credentialSubject": {
-              "id": "did:example:b34ca6cd37bbf23",
-              "type": ["PermanentResident", "Person"],
-              "givenName": "JOHN",
-              "familyName": "SMITH",
-              "gender": "Male",
-              "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
-              "residentSince": "2015-01-01",
-              "lprCategory": "C09",
-              "lprNumber": "999-999-999",
-              "commuterClassification": "C1",
-              "birthCountry": "Bahamas",
-              "birthDate": "1958-07-17"
-            },
-        });
+            "https://www.w3.org/2018/credentials/v1",
+            "https://www.w3.org/2018/credentials/examples/v1"
+          ],
+          "@id": "https://issuer.oidp.uscis.gov/credentials/83627465",
+          "type": ["VerifiableCredential", "PermanentResidentCard"],
+          "issuer": "did:example:28394728934792387",
+          "identifier": "83627465",
+          "name": "Permanent Resident Card",
+          "description": "Government of Example Permanent Resident Card.",
+          "issuanceDate": "2019-12-03T12:19:52Z",
+          "expirationDate": "2029-12-03T12:19:52Z",
+          "credentialSubject": {
+            "id": "did:example:b34ca6cd37bbf23",
+            "type": ["PermanentResident", "Person"],
+            "givenName": "JOHN",
+            "familyName": "SMITH",
+            "gender": "Male",
+            "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
+            "residentSince": "2015-01-01",
+            "lprCategory": "C09",
+            "lprNumber": "999-999-999",
+            "commuterClassification": "C1",
+            "birthCountry": "Bahamas",
+            "birthDate": "1958-07-17"
+          },});
 
         let (kv_body, kv_subject) = get_body_subject();
 
         let vc = to.create_credential(
-            crate::CRED_TYPE_PERMANENT_RESIDENT_CARD.to_string(),
+            vec![crate::CRED_TYPE_PERMANENT_RESIDENT_CARD.to_string()],
             kv_subject,
             kv_body,
             "https://issuer.oidp.uscis.gov/credentials/83627465",
@@ -231,7 +262,7 @@ mod tests {
         let (kv_body, kv_subject) = get_body_subject();
 
         let vc = to.create_credential(
-            crate::CRED_TYPE_PERMANENT_RESIDENT_CARD.to_string(),
+            vec![crate::CRED_TYPE_PERMANENT_RESIDENT_CARD.to_string()],
             kv_subject,
             kv_body,
             "https://issuer.oidp.uscis.gov/credentials/83627465",
